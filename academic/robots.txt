@@ -1,1 +1,1 @@
-Sitemap: https://cs.stanford.edu/people/estrasni/academic/sitemap.xml
+Sitemap: http://localhost:4000/academic/sitemap.xml
