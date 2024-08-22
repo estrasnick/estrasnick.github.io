@@ -1,0 +1,969 @@
+<!doctype html>
+<!--
+	Attribution: CSS adapted from this wonderful template:
+	Phantom by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+  <head>
+    <title>Evan Strasnick</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta http-equiv="Pragma" content="no-cache">
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+    <script src="scripts/pixi.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+    <script src="scripts/pixi-sound.js"></script>
+    <script src="scripts/pixi-filters.js"></script>
+  </head>
+  <body class="is-preload">
+      <!-- Wrapper -->
+          <div id="wrapper">
+
+              <!-- Main -->
+                  <div id="main">
+                      <div class="inner">
+                          <header>
+                              <h1>Welcome. You've found Evan's repository of oddities.</h1>
+                          </header>
+                          <div id="game">
+                              <!-- *********************************
+
+                              Hello! This is the result of some messing around to learn
+                                rendering via pixi-js. Feel free to view the code here in full,
+                                in case it's at all useful to you!
+
+                              Assets were adapted from:
+                              - https://nox-sound-design.itch.io/essentials-series-sfx-nox-sound
+                              - https://obsydianx.itch.io/interface-sfx-pack-1
+                              - https://alkakrab.itch.io/free-25-fantasy-rpg-game-tracks-no-copyright-vol-2
+                              - https://cainos.itch.io/pixel-art-top-down-basic
+                              - https://bakudas.itch.io/generic-rpg-pack
+                              - https://exhitt.itch.io/medievaldoor
+
+                              ************************************** -->
+                              <script>
+
+                                // If user returned here via back button, trigger a refresh
+                                // to ensure clean gamestate and flush stale assets
+                                window.addEventListener( "pageshow", function ( event ) {
+                                  var historyTraversal = event.persisted ||
+                                                        ( typeof window.performance != "undefined" &&
+                                                              window.performance.navigation.type === 2 );
+                                  if ( historyTraversal ) {
+                                    resetAll();
+                                  }
+                                });
+
+
+                                /********************
+
+                                Configurable parameters
+
+                                ********************/
+                                // app dimensions -- scale down for small screens
+                                const windowWidth = document.getElementById("game").offsetWidth;
+                                const appWidth = Math.min(480.0, windowWidth);
+                                const appHeight = appWidth;
+
+                                // Dimensions of the traverseable grid
+                                const gridWidth = 16;
+                                const gridHeight = 16;
+
+                                // Starting square for player
+                                const playerStartX = 7;
+                                const playerStartY = 7;
+
+                                // Distance thresholds for swipe detection on mobile
+                                const minSwipeX = 35;
+                                const minSwipeY = 35;
+
+                                // Fonts
+                                WebFont.load({
+                                  google: {
+                                    families: ['Press Start 2P']
+                                  }
+                                });
+                                const blockTextStyle = new PIXI.TextStyle({
+                                  fontFamily: 'Press Start 2P',
+                                  fontSize: 12,
+                                  fill: "#000000",
+                                  letterSpacing: -1
+                                });
+
+                                // goals and corresponding target urls
+                                const goals = {
+                                  "research": "../academic",
+                                  "puzzle": "puzzle",
+                                  "creations": "creations",
+                                };
+
+                                // starting position of blocks
+                                const startingBlocks = [
+                                  {
+                                    "name": "search",
+                                    "gx": 11,
+                                    "gy": 14,
+                                    "isRight": true,
+                                    "textAnchorX": -.2
+                                  },
+                                  {
+                                    "name": "re",
+                                    "gx": 2,
+                                    "gy": 3,
+                                    "isRight": false,
+                                    "textAnchorX": .7
+                                  },
+                                  {
+                                    "name": "zzle",
+                                    "gx": 14,
+                                    "gy": 2,
+                                    "isRight": true,
+                                    "textAnchorX": -.3
+                                  },
+                                  {
+                                    "name": "pu",
+                                    "gx": 3,
+                                    "gy": 12,
+                                    "isRight": false,
+                                    "textAnchorX": .75
+                                  },
+                                  {
+                                    "name": "crea",
+                                    "gx": 5,
+                                    "gy": 3,
+                                    "isRight": false,
+                                    "textAnchorX": .85
+                                  },
+                                  {
+                                    "name": "tions",
+                                    "gx": 10,
+                                    "gy": 7,
+                                    "isRight": true,
+                                    "textAnchorX": -.2
+                                  },
+                                ];
+
+                                // floor tiles
+                                const floorLayout = [
+                                  ["grass", "grass", "grass", "grass", "grass", "shrub", "grass", "grass", "grass", "twowhiteflowers", "grass", "grass", "yellowflowers", "water", "grass", "grass"],
+                                  ["grass", "tree1", "grass", "elevationTL", "blank", "elevationTM", "blank", "elevationTM", "blank", "elevationTR", "blank", "tree1", "grass", "water", "grass", "shrub"],
+                                  ["grass", "grass", "shrub", "blank", "whiteflowers", "grass", "shrub", "grass", "grass", "tree2", "blank", "bush2", "grass", "water", "smallflower", "grass"],
+                                  ["grass", "smallflower", "grass", "elevationML", "blank", "grass", "grass", "shrub", "yellowflowers", "elevationMR", "blank", "grass", "grass", "water", "grass", "grass"],
+                                  ["bush1", "grass", "grass", "blank", "blank", "yellowflowers", "grass", "shrub", "grass", "blank", "blank", "grass", "shrub", "water", "yellowflowers", "grass"],
+                                  ["grass", "grass", "grass", "elevationBL", "blankBlocked", "elevationBM", "blankBlocked", "stairs", "blank", "elevationBR", "blankBlocked", "grass", "whiteflowers", "water", "grass", "grass"],
+                                  ["grass", "grass", "grass", "blankBlocked", "blankBlocked", "blankBlocked", "blankBlocked", "blank", "blank", "blankBlocked", "blankBlocked", "grass", "grass", "waterout", "waterin", "grass"],
+                                  ["yellowflowers", "grass", "shrub", "grass", "whiteflowers", "grass", "grass", "stone", "brokenNW", "grass", "grass", "grass", "twowhiteflowers", "grass", "water", "grass"],
+                                  ["grass", "grass", "grass", "grass", "bush2", "grass", "grass", "crackedNW", "stone", "grass", "grass", "shrub", "grass", "grass", "water", "shrub"],
+                                  ["grass", "yellowflowers", "grass", "grass", "smallflower", "grass", "pot2", "stone", "crackedSW", "grass", "grass", "grass", "grass", "shrub", "waterout", "waterin"],
+                                  ["bigrock", "blankBlocked", "grass", "grass", "grass", "shrub", "lamp", "brokenNW", "brokenNE", "lamp", "yellowflowers", "grass", "whiteflowers", "grass", "shrub", "grass"],
+                                  ["tree2", "rock2", "grass", "grass", "shrub", "grass", "whiteflowers", "stone", "brokenNE", "grass", "pot1", "grass", "grass", "grass", "grass", "yellowflowers"],
+                                  ["grass", "smallflower", "grass", "grass", "grass", "grass", "grass", "stone", "crackedNW", "grass", "shrub", "grass", "smallflower", "grass", "grass", "whiteflowers"],
+                                  ["grass", "twowhiteflowers", "grass", "whiteflowers", "grass", "shrub", "grass", "crackedSW", "brokenNW", "grass", "grass", "grass", "shrub", "tree2", "grass", "grass"],
+                                  ["pot2", "grass", "smallflower", "grass", "shrub", "rock3", "yellowflowers", "brokenNE", "stone", "grass", "grass", "smallflower", "bush1", "grass", "bigrock", "blankBlocked"],
+                                  ["grass", "bigrock", "blankBlocked", "tree1", "grass", "grass", "lamp", "brokenNW", "crackedSW", "lamp", "grass", "grass", "grass", "grass", "shrub", "twowhiteflowers"],
+                                ];
+
+                                // impassable walls
+                                // x = 0 lies between tiles 0 and 1
+                                const startingWalls = [
+                                  {x: 1, y: 2, horizontal: false},
+                                  {x: 2, y: 2, horizontal: false},
+                                  {x: 3, y: 2, horizontal: false},
+                                  {x: 4, y: 2, horizontal: false},
+                                  {x: 1, y: 10, horizontal: false},
+                                  {x: 2, y: 10, horizontal: false},
+                                  {x: 3, y: 10, horizontal: false},
+                                  {x: 4, y: 10, horizontal: false},
+                                  {x: 0, y: 3, horizontal: true},
+                                  {x: 0, y: 4, horizontal: true},
+                                  {x: 0, y: 5, horizontal: true},
+                                  {x: 0, y: 6, horizontal: true},
+                                  {x: 0, y: 7, horizontal: true},
+                                  {x: 0, y: 8, horizontal: true},
+                                  {x: 0, y: 9, horizontal: true},
+                                  {x: 0, y: 10, horizontal: true},
+                                ];
+
+                                // Asset urls
+                                PIXI.Assets.addBundle("environment", {
+                                  grass: "assets/images/floor/floor0.png",
+                                  shrub: "assets/images/floor/floor1.png",
+                                  smallflower: "assets/images/floor/floor2.png",
+                                  whiteflowers: "assets/images/floor/floor3.png",
+                                  yellowflowers: "assets/images/floor/floor6.png",
+                                  twowhiteflowers: "assets/images/floor/floor7.png",
+                                  stone: "assets/images/floor/floor9.png",
+                                  brokenNE: "assets/images/floor/floor10.png",
+                                  crackedSW: "assets/images/floor/floor11.png",
+                                  crackedNW: "assets/images/floor/floor12.png",
+                                  brokenNW: "assets/images/floor/floor14.png",
+                                  water: "assets/images/water/water15.png",
+                                  waterout: "assets/images/water/water16.png",
+                                  waterin: "assets/images/water/water17.png",
+                                  crateFloating: "assets/images/crateFloatingDark.png",
+                                  bigrock: "assets/images/bigrock.png",
+                                  brokenwell: "assets/images/brokenwell.png",
+                                  bush1: "assets/images/bush1.png",
+                                  bush2: "assets/images/bush2.png",
+                                  elevationBL: "assets/images/elevationBL.png",
+                                  elevationBM: "assets/images/elevationBM.png",
+                                  elevationBR: "assets/images/elevationBR.png",
+                                  elevationML: "assets/images/elevationML.png",
+                                  elevationMR: "assets/images/elevationMR.png",
+                                  elevationTL: "assets/images/elevationTL.png",
+                                  elevationTM: "assets/images/elevationTM.png",
+                                  elevationTR: "assets/images/elevationTR.png",
+                                  lamp: "assets/images/lamp.png",
+                                  pot1: "assets/images/pot1.png",
+                                  pot2: "assets/images/pot2.png",
+                                  rock1: "assets/images/rock1.png",
+                                  rock2: "assets/images/rock2.png",
+                                  rock3: "assets/images/rock3.png",
+                                  stairs: "assets/images/stairs.png",
+                                  tree1: "assets/images/tree1.png",
+                                  tree2: "assets/images/tree2.png",
+                                  wallbig: "assets/images/wallbig.png",
+                                  wallh1: "assets/images/wallh1.png",
+                                  wallh2: "assets/images/wallh2.png",
+                                  wallv1: "assets/images/wallv1.png",
+                                  wallv2: "assets/images/wallv2.png",
+                                  blankBlocked: "assets/images/blank.png",
+                                  blank: "assets/images/blank.png",
+                                });
+
+                                PIXI.Assets.addBundle("spritesheets", {
+                                  player: "assets/images/player/player_frames.json",
+                                  door_left: "assets/images/door/door_frames_left.json",
+                                  door_right: "assets/images/door/door_frames_right.json",
+                                });
+
+                                const audioPaths = {
+                                  bgm: "assets/audio/bgm.mp3",
+                                  footstep: "assets/audio/footstep.mp3",
+                                  dunk: "assets/audio/dunk.mp3",
+                                  dooropen: "assets/audio/dooropen.mp3",
+                                };
+
+                                // Asset parameters
+                                const props = {
+                                  "bigrock": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.5]},
+                                  "brokenwell": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.5]},
+                                  "bush1": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "bush2": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "elevationBL": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "elevationBM": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "elevationBR": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "elevationML": {width: 2, height: 2, blocking: false, anchor: [0.0, 0.0]},
+                                  "elevationMR": {width: 2, height: 2, blocking: false, anchor: [0.0, 0.0]},
+                                  "elevationTL": {width: 2, height: 2, blocking: false, anchor: [0.0, 0.0]},
+                                  "elevationTM": {width: 2, height: 2, blocking: false, anchor: [0.0, 0.0]},
+                                  "elevationTR": {width: 2, height: 2, blocking: false, anchor: [0.0, 0.0]},
+                                  "stone": {width: 1, height: 1, blocking: false, anchor: [0.0, 0.0]},
+                                  "crackedSW": {width: 1, height: 1, blocking: false, anchor: [0.0, 0.0]},
+                                  "lamp": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "pot1": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "pot2": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "rock1": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "rock2": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "rock3": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "stairs": {width: 2, height: 2, blocking: false, anchor: [0.0, 0.0]},
+                                  "tree1": {width: 2, height: 2, blocking: false, anchor: [0.0, 1.0]},
+                                  "tree2": {width: 2, height: 3, blocking: false, anchor: [0.0, 1.0]},
+                                  "wallbig": {width: 4, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "wallh1": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "wallh2": {width: 2, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "wallv1": {width: 1, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "wallv2": {width: 1, height: 2, blocking: true, anchor: [0.0, 0.0]},
+                                  "blankBlocked": {width: 1, height: 1, blocking: true, anchor: [0.0, 0.0]},
+                                  "blank": {width: 1, height: 1, blocking: false, anchor: [0.0, 0.0]},
+                                }
+
+                                // We can cheaply simulate occlusion by having objects
+                                //   render at a higher zIndex the lower they are in the scene
+                                const zIndexDepthFactor = 10;
+
+                                // These offsets are then added to y * ZIndexDepthFactor to
+                                //   determine relative overlap between actors on the same plane
+                                const baseZIndex = {
+                                  grid: 0,
+                                  sunkenblock: 1,
+                                  player: 3,
+                                  block: 4,
+                                  fadeout: 1000
+                                }
+
+
+
+
+                                /********************
+
+                                Managing gamestate/access
+
+                                ********************/
+                                /*
+                                  While we aim to minimize global state, providing controlled access to a unified
+                                    representation of game state enables much cleaner design than individually
+                                    sharing around handles to all necessary assets, controls, and state variables.
+                                    We want both global access and single-instance behavior, so the use of a Singleton
+                                    is acceptable here.
+                                  However, we want this gamestate to be as safe as possible. We use the IIFE Module
+                                    pattern to encapsulate private members and provide access to those variables to the
+                                    rest of the code only via a controlled API.
+                                  See this post for some motivations and other potential refactors:
+                                    https://medium.com/@sitapati/avoiding-mutable-global-state-in-browser-js-89437eaebaac
+                                */
+
+                                // Singleton Gamestate
+                                const Gamestate = (function () {
+                                  let instance;
+
+                                  // IIFE enabling mutability only through update methods
+                                  function initGamestate() {
+                                    return (() => {
+
+                                      // Gamestate Instance Variables
+                                      let _cellWidth = appWidth / gridWidth;
+                                      let _cellHeight = _cellWidth;
+                                      let _grid;
+                                      let _gridCanvas;
+                                      let _fadeTexture;
+                                      let _audio;
+                                      let _horizontalWalls, _verticalWalls;
+                                      let _playerActor;
+                                      let _transitioning = false;
+
+                                      function placeActor(actor, grid, gridCanvas) {
+                                        if (_grid[actor.gy][actor.gx] != null && _grid[actor.gy][actor.gx].active) {
+                                          throw new Error(`Multiple actors placed at ${actor.gx}, ${actor.gy}`);
+                                        }
+                                        _grid[actor.gy][actor.gx] = actor;
+                                      }
+
+                                      // construct playable grid
+                                      [_grid, _gridCanvas] = initGrid(_cellWidth, _cellHeight);
+
+                                      // draw fade out white screen
+                                      _fadeTexture = initFadeout();
+
+                                      // configure audio
+                                      _audio = initAudio();
+
+                                      // create floor tile types, creating arrays to speed up obstacle checking
+                                      let [waterTiles, blockedTiles] = initTiles(_cellWidth, _cellHeight, _grid, _gridCanvas);
+                                      waterTiles.map(waterTile => placeActor(waterTile, _grid, _gridCanvas));
+                                      blockedTiles.map(blockedTile => placeActor(blockedTile, _grid, _gridCanvas));
+
+                                      // draw moveable blocks
+                                      let blocks = initBlocks(_cellWidth, _cellHeight, _grid, _gridCanvas);
+                                      blocks.map(block => placeActor(block, _grid, _gridCanvas));
+
+                                      // draw player
+                                      _playerActor = initPlayer(_cellWidth, _cellHeight, _grid, _gridCanvas);
+                                      placeActor(_playerActor, _grid, _gridCanvas);
+
+                                      // add lighting filters
+                                      initLighting();
+
+                                      // initialize wall structures, which speed up collision checks
+                                      [_horizontalWalls, _verticalWalls] = initWalls();
+
+                                      // API accessible to game features
+                                      const publicGamestate = {
+                                        // Return a local copy of the grid. Callers cannot modify via this copy.
+                                        // However, we don't want to copy out underlying sprites and actors. The
+                                        //   individual actors found in the grid will themselves be mutable, so
+                                        //   callers can update their properties.
+                                        getGrid: () => _grid.map(y => ({...y.map(x => x)})),
+
+                                        // Get scaled size of each cell in the grid
+                                        getCellWidth: () => _cellWidth,
+                                        getCellHeight: () => _cellHeight,
+
+                                        // Provides setter access for a single member in the grid
+                                        updateGrid: (y, x, updated) => (_grid[y][x] = updated),
+
+                                        // Play a target audio effect
+                                        playSFX: (name, options) => {
+                                          if (name in _audio) {_audio[name].play(options)}
+                                          else {throw new Error("No audio effect found with name: " + name)}
+                                        },
+
+                                        // Fade in and out of the scene
+                                        beginFadein: () => {
+                                          startFadeInTransition(_fadeTexture, 1000);
+                                        },
+                                        beginFadeout: (url) => {
+                                          _transitioning = true;
+                                          startFadeOutTransition(_fadeTexture, url, 2000.0);
+                                        },
+                                        isTransitioning: () => _transitioning,
+
+                                        // Check collision data
+                                        isHorizontalWall: (y, x) => (_horizontalWalls[y][x]),
+                                        isVerticalWall: (y, x) => (_verticalWalls[y][x]),
+
+                                        // Convert grid location to corresponding x/y on the canvas
+                                        getGridXPosition: (x, anchorX) => ((x + anchorX) * _cellWidth + _gridCanvas.x),
+                                        getGridYPosition: (y, anchorY) => ((y + anchorY) * _cellHeight + _gridCanvas.y),
+
+                                        // Returns a copy of the list of blocks in the level. This copy cannot be used to mutate
+                                        //   the list in the gamestate, but block actors/sprites are left mutable.
+                                        getBlocks: () => {
+                                          let blocks = [];
+                                          _grid.map(row => row.filter(cell => cell != null && cell.type == "block").map(block => blocks.push(block)));
+                                          return blocks;
+                                        },
+
+                                        // Gets the player's current position in the grid
+                                        getPlayerGridLocation: () => ({gx: _playerActor.gx, gy: _playerActor.gy}),
+
+                                        // Attempts to move the player one cell in the target direction
+                                        movePlayer: (direction) => {attemptMove(_playerActor, direction);},
+
+                                        // Inactive components will still render, but will not interact with movement/goals
+                                        setActive: (y, x, active) => {
+                                          if (!(_grid[y][x] instanceof Actor)) {throw new Error("No actor found at: (" + x + ", " + y + ")")}
+                                          else {_grid[y][x].active = active;}
+                                        },
+                                      }
+                                      return publicGamestate;
+                                    })();
+                                  }
+
+                                  // Finally, enable access to the Singleton
+                                  return {
+                                    getInstance: function() {
+                                      if (!instance) {
+                                        instance = initGamestate();
+                                      }
+                                      return instance;
+                                    },
+                                  };
+                                })();
+
+
+                                /********************
+
+                                Initialization builders
+
+                                ********************/
+                                function initGrid(cellWidth, cellHeight) {
+                                  let grid = [...Array(gridWidth)].map(x => Array(gridHeight).fill(null));
+
+                                  let gridCanvas = PIXI.Sprite.from(PIXI.Texture.WHITE);
+                                  gridCanvas.width = gridWidth * cellWidth;
+                                  gridCanvas.height = gridHeight * cellHeight;
+                                  gridCanvas.x = (app.screen.width - gridCanvas.width) * .5;
+                                  gridCanvas.y = (app.screen.height - gridCanvas.height) * .5;
+                                  gridCanvas.zIndex = baseZIndex["grid"];
+                                  gridCanvas.name = "gridCanvas";
+                                  app.stage.addChild(gridCanvas);
+                                  app.stage.filterArea = new PIXI.Rectangle(
+                                    gridCanvas.x,
+                                    gridCanvas.y,
+                                    gridCanvas.width,
+                                    gridCanvas.height
+                                  );
+
+                                  let bg = new PIXI.Graphics();
+                                  bg.beginFill(0x72751B);
+                                  bg.drawRect(gridCanvas.x, gridCanvas.y, gridCanvas.width, gridCanvas.height);
+                                  app.stage.addChild(bg);
+
+                                  return [grid, gridCanvas];
+                                }
+
+                                function initFadeout() {
+                                  let fadeWhite = new PIXI.Graphics();
+                                  fadeWhite.beginFill(0xFFFFFF);
+                                  fadeWhite.drawRect(0, 0, app.screen.width, app.screen.height);
+                                  fadeWhite.zIndex = baseZIndex["fadeout"];
+                                  fadeWhite.name = "fadeWhite";
+                                  app.stage.addChild(fadeWhite);
+
+                                  return fadeWhite;
+                                }
+
+                                function initAudio() {
+                                  let audio = {};
+                                  audio.bgm = PIXI.sound.Sound.from(audioPaths['bgm']);
+                                  audio.bgm.loop = true;
+                                  audio.footstep = PIXI.sound.Sound.from(audioPaths['footstep']);
+                                  audio.footstep.singleInstance = true;
+                                  audio.dunk = PIXI.sound.Sound.from(audioPaths['dunk']);
+                                  audio.dunk.singleInstance = true;
+                                  audio.dooropen = PIXI.sound.Sound.from(audioPaths['dooropen']);
+
+                                  return audio;
+                                }
+
+                                function initTiles(cellWidth, cellHeight, grid, gridCanvas) {
+                                  let waterTiles = []
+                                  let blockedTiles = []
+                                  let hiddenSprite = PIXI.Sprite.from("blank");
+                                  hiddenSprite.renderable = false;
+                                  for (let x = 0; x < floorLayout.length; x++) {
+                                    for (let y = 0; y < floorLayout[0].length; y++) {
+                                      let sprite = PIXI.Sprite.from(PIXI.Assets.get(floorLayout[y][x]));
+                                      if (Object.keys(props).includes(floorLayout[y][x])) {
+                                        sprite.width = cellWidth * props[floorLayout[y][x]].width;
+                                        sprite.height = cellHeight * props[floorLayout[y][x]].height;
+                                        sprite.x = x * cellWidth + gridCanvas.x;
+                                        sprite.y = y * cellHeight + gridCanvas.y;
+                                        sprite.anchor.set(props[floorLayout[y][x]].anchor[0], props[floorLayout[y][x]].anchor[1]);
+                                        if (props[floorLayout[y][x]].blocking) {
+                                          let actor = new Actor("blocked", "blocked", hiddenSprite, x, y, false, false);
+                                          blockedTiles.push(actor);
+                                        }
+                                      } else {
+                                        sprite.width = cellWidth;
+                                        sprite.height = cellHeight;
+                                        sprite.anchor.set(0.5);
+                                        sprite.x = (x + 0.5) * cellWidth + gridCanvas.x;
+                                        sprite.y = (y + 0.5) * cellHeight + gridCanvas.y;
+                                      }
+                                      sprite.zIndex = y * zIndexDepthFactor;
+                                      app.stage.addChild(sprite);
+
+                                      if (["water", "waterout", "waterin"].includes(floorLayout[y][x])) {
+                                        let actor = new Actor("water", "water", sprite, x, y, false, false);
+                                        waterTiles.push(actor);
+                                      }
+                                    }
+                                  }
+                                  return [waterTiles, blockedTiles];
+                                }
+
+                                function initBlocks(cellWidth, cellHeight, grid, gridCanvas) {
+                                  let blocks = []
+                                  for (let block of startingBlocks) {
+                                    const blockFrames = [];
+                                    for (let i = 0; i < 4; i++) {
+                                      let frame = PIXI.Texture.from(`door_${block["isRight"] ? "right" : "left"}_${i}.png`);
+                                      blockFrames.push(frame);
+                                    }
+                                    let sBlock = new PIXI.AnimatedSprite(blockFrames);
+                                    sBlock.name = block.name;
+                                    sBlock.animationSpeed = 0.1;
+                                    sBlock.loop = false;
+                                    sBlock.zIndex = baseZIndex["block"] + block.gy * zIndexDepthFactor;
+                                    sBlock.anchor.set(block.isRight ? -.2 : .5, .5);
+                                    sBlock.width = cellWidth * (block.isRight ? 1.625 : .75);
+                                    sBlock.height = cellHeight * 1.2;
+                                    sBlock.x = (block.gx + sBlock.anchor.x) * cellWidth + gridCanvas.x;
+                                    sBlock.y = (block.gy + sBlock.anchor.y) * cellHeight + gridCanvas.y;
+
+
+                                    // Create text marker, to appear when player is near a block
+                                    let text = new PIXI.Text(block.name, blockTextStyle);
+                                    text.name = "blockText";
+                                    text.scale.set(1.2, 2);
+                                    text.anchor.set(block.textAnchorX, .5);
+                                    text.y = -.5 * cellHeight;
+                                    text.renderable = false;
+                                    text.filters = [];
+                                    const glow = new PIXI.filters.GlowFilter();
+                                    text.filters.push(glow);
+                                    sBlock.addChild(text);
+                                    app.stage.addChild(sBlock);
+
+                                    let actor = new Actor(block.name, "block", sBlock, block.gx, block.gy, true, block.isRight);
+                                    blocks.push(actor);
+                                  }
+                                  return blocks;
+                                }
+
+                                function initPlayer(cellWidth, cellHeight, grid, gridCanvas) {
+                                  const playerFrames = [];
+                                  for (let i = 0; i < 7; i++) {
+                                    let frame = PIXI.Texture.from(`player_${i}.png`);
+                                    playerFrames.push(frame);
+                                  }
+                                  sPlayer = new PIXI.AnimatedSprite(playerFrames);
+                                  sPlayer.name = "player";
+                                  sPlayer.anchor.set(0.5);
+                                  sPlayer.width = cellWidth;
+                                  sPlayer.height = cellHeight;
+                                  sPlayer.animationSpeed = 0.15;
+                                  sPlayer.zIndex = baseZIndex["player"] + playerStartY * zIndexDepthFactor;
+                                  sPlayer.x = (playerStartX + sPlayer.anchor.x) * cellWidth + gridCanvas.x;
+                                  sPlayer.y = (playerStartY + sPlayer.anchor.y) * cellHeight + gridCanvas.y;
+                                  sPlayer.play();
+                                  app.stage.addChild(sPlayer);
+
+                                  let playerActor = new Actor("player", "player", sPlayer, playerStartX, playerStartY, true, false);
+
+                                  return playerActor;
+                                }
+
+                                function initLighting() {
+                                  const godrayFilter = new PIXI.filters.GodrayFilter();
+                                  godrayFilter.gain = .45;
+                                  app.stage.filters = [godrayFilter];
+                                  animateLighting(godrayFilter, .001);
+                                }
+
+                                function initWalls() {
+                                  let horizontalWalls = [...Array(gridWidth)].map(e => Array(gridHeight).fill(false));
+                                  let verticalWalls = [...Array(gridWidth)].map(e => Array(gridHeight).fill(false));
+                                  for (let wall of startingWalls) {
+                                    if (wall.horizontal) {
+                                      horizontalWalls[wall.x][wall.y] = true;
+                                    }
+                                    else {
+                                      verticalWalls[wall.x][wall.y] = true;
+                                    }
+                                  }
+                                  return [horizontalWalls, verticalWalls];
+                                }
+
+
+                                /********************
+
+                                Game utilities
+
+                                ********************/
+                                class Actor {
+                                  constructor(name, type, sprite, gx, gy, moveable, isRight, active=true) {
+                                    this.name = name;
+                                    this.type = type;
+                                    this.sprite = sprite;
+                                    this.moveable = moveable;
+                                    this.gx = gx;
+                                    this.gy = gy;
+                                    this.isRight = isRight;
+                                    this.active = active;
+                                  }
+
+                                  clone() {
+                                    return new Actor(
+                                      this.name,
+                                      this.type,
+                                      this.sprite,
+                                      this.gx,
+                                      this.gy,
+                                      this.moveable,
+                                      this.isRight,
+                                      this.active
+                                    );
+                                  }
+
+                                  gridMoveTo(x, y) {
+                                    let gamestate = Gamestate.getInstance();
+                                    let grid = gamestate.getGrid()
+                                    if (grid[y][x] != null && grid[y][x].active) {
+                                      throw new Error(`Multiple actors placed at ${x}, ${y}`);
+                                    }
+                                    gamestate.updateGrid(this.gy, this.gx, null);
+                                    gamestate.updateGrid(y, x, this);
+                                    this.sprite.zIndex += (y - this.gy) * zIndexDepthFactor;
+                                    this.gx = x;
+                                    this.gy = y;
+                                    this.sprite.x = gamestate.getGridXPosition(x, this.sprite.anchor.x);
+                                    this.sprite.y = gamestate.getGridYPosition(y, this.sprite.anchor.y);
+                                  }
+                                }
+
+                                function startFadeInTransition(fadeTexture, duration) {
+                                  fadeTexture.alpha = 1;
+
+                                  const ticker = PIXI.Ticker.shared;
+
+                                  const onTick = (deltaTime) => {
+                                    const deltaMS = deltaTime / PIXI.settings.TARGET_FPMS;
+                                    fadeTexture.alpha -= deltaMS / duration;
+
+                                    if (fadeTexture.alpha < 0) {
+                                      ticker.remove(onTick);
+                                    }
+                                  }
+
+                                  ticker.add(onTick)
+                                }
+
+                                function startFadeOutTransition(fadeTexture, url, duration) {
+                                  fadeTexture.alpha = 0;
+
+                                  const ticker = PIXI.Ticker.shared;
+
+                                  const onTick = (deltaTime) => {
+                                    const deltaMS = deltaTime / PIXI.settings.TARGET_FPMS;
+                                    fadeTexture.alpha += deltaMS / duration;
+
+                                    if (fadeTexture.alpha > 1) {
+                                      ticker.remove(onTick);
+                                      window.location = url;
+                                    }
+                                  }
+
+                                  ticker.add(onTick)
+                                }
+
+                                function animateLighting(filter, speed) {
+                                  const ticker = PIXI.Ticker.shared;
+
+                                  const onTick = (deltaTime) => {
+                                    const deltaMS = deltaTime / PIXI.settings.TARGET_FPMS;
+                                    filter.time += deltaMS * speed;
+                                  }
+
+                                  ticker.add(onTick)
+                                }
+
+                                function checkForGoals() {
+                                  let gamestate = Gamestate.getInstance();
+                                  let grid = gamestate.getGrid();
+                                  let blocks = gamestate.getBlocks();
+                                  for (let block of blocks) {
+                                    let s = block.name;
+                                    x = block.gx + 1;
+                                    while (
+                                      x < gridWidth - 1 &&
+                                      grid[block.gy][x] != null &&
+                                      grid[block.gy][x].type == "block" &&
+                                      grid[block.gy][x].active
+                                    ) {
+                                      s += grid[block.gy][x].name;
+                                      if (s in goals) {
+                                        block.sprite.getChildByName("blockText").renderable = true;
+                                        grid[block.gy][x].sprite.getChildByName("blockText").renderable = true;
+                                        block.sprite.x += (block.isRight ? -.07 : .07) * gamestate.getCellWidth();
+                                        grid[block.gy][x].sprite.x += (grid[block.gy][x].isRight ? -.07 : .07) * gamestate.getCellWidth();
+                                        block.sprite.play();
+                                        grid[block.gy][x].sprite.play();
+
+                                        gamestate.playSFX("dooropen", {volume: .2});
+                                        gamestate.beginFadeout(goals[s]);
+                                      }
+                                      x++;
+                                    }
+                                  }
+                                }
+
+                                function checkForBlockText() {
+                                  let gamestate = Gamestate.getInstance();
+                                  if (gamestate.isTransitioning()) {return;}
+                                  let blocks = gamestate.getBlocks();
+                                  let playerGridLocation = gamestate.getPlayerGridLocation();
+                                  for (let block of blocks) {
+                                    if (!block.active) {
+                                      block.sprite.getChildByName("blockText").renderable = false;
+                                    } else if (Math.abs(block.gx - playerGridLocation.gx) <= 1 && Math.abs(block.gy - playerGridLocation.gy) <= 1) {
+                                      block.sprite.getChildByName("blockText").renderable = true;
+                                    } else {
+                                      block.sprite.getChildByName("blockText").renderable = false;
+                                    }
+                                  }
+                                }
+
+                                function attemptMove(obj, direction) {
+                                  let gamestate = Gamestate.getInstance();
+                                  let grid = gamestate.getGrid();
+                                  if (gamestate.isTransitioning()) {
+                                    return;
+                                  }
+
+                                  // Edge detection
+                                  var targetGX = 0;
+                                  var targetGY = 0;
+                                  switch(direction) {
+                                    case "d":
+                                      if (obj.gy >= gridHeight - 1) {return false;}
+                                      if (gamestate.isHorizontalWall(obj.gy, obj.gx)) {return false;}
+                                      targetGX = obj.gx;
+                                      targetGY = obj.gy + 1;
+                                      break;
+                                    case "u":
+                                      if (obj.gy <= 0) {return false;}
+                                      if (gamestate.isHorizontalWall(obj.gy - 1, obj.gx)) {return false;}
+                                      targetGX = obj.gx;
+                                      targetGY = obj.gy - 1;
+                                      break;
+                                    case "r":
+                                      if (obj.gx >= gridWidth - 1) {return false;}
+                                      if (gamestate.isVerticalWall(obj.gy, obj.gx)) {return false;}
+                                      targetGX = obj.gx + 1;
+                                      targetGY = obj.gy;
+                                      break;
+                                    case "l":
+                                      if (obj.gx <= 0) {return false;}
+                                      if (gamestate.isVerticalWall(obj.gy, obj.gx - 1)) {return false;}
+                                      targetGX = obj.gx - 1;
+                                      targetGY = obj.gy;
+                                      break;
+                                  }
+
+                                  // Target space should be empty or moveable
+                                  if (grid[targetGY][targetGX] != null && grid[targetGY][targetGX].active) {
+                                    if (!grid[targetGY][targetGX].moveable) {
+
+                                      // Special case: block pushed into water
+                                      if (grid[targetGY][targetGX].type == "water" && obj.type == "block")
+                                      {
+                                        // Create sunken block sprite and destroy actors
+                                        const floatingTexture = PIXI.Sprite.from("crateFloating").texture;
+                                        obj.sprite.anchor.set(.5, .5);
+                                        obj.sprite.texture = floatingTexture;
+                                        obj.sprite.width = gamestate.getCellWidth();
+                                        obj.sprite.zIndex = obj.sprite.zIndex - baseZIndex["block"] + baseZIndex["sunkenblock"];
+                                        gamestate.setActive(obj.gy, obj.gx, false)
+                                        gamestate.updateGrid(targetGY, targetGX, null);
+                                        gamestate.playSFX("dunk", {volume: .35})
+                                      } else {
+                                        return false;
+                                      }
+                                    } else if (!attemptMove(grid[targetGY][targetGX], direction)) { // attempt to push
+                                      return false;
+                                    }
+                                  }
+
+                                  obj.gridMoveTo(targetGX, targetGY);
+
+                                  // Goal checking and text visibility updating need only happen
+                                  //   after movement has occurred
+                                  checkForGoals();
+                                  checkForBlockText();
+
+                                  gamestate.playSFX("footstep", {volume: .2})
+
+                                  return true;
+                                }
+
+                                function resetAll() {
+                                  window.location.reload();
+                                }
+
+
+                                /********************
+
+                                Input
+
+                                ********************/
+                                // Swipes on mobile
+                                function onTouchStart(e) {
+                                  // only react to touches in the application window
+                                  if (e.changedTouches[0].target.localName != "canvas")
+                                  {
+                                    return;
+                                  }
+
+                                  touchStartX = e.changedTouches[0].screenX;
+                                  touchStartY = e.changedTouches[0].screenY;
+                                }
+
+                                function onTouchEnd(e) {
+                                // only react to touches in the application window
+                                  if (e.changedTouches[0].target.localName != "canvas")
+                                  {
+                                    return;
+                                  }
+
+                                  let gamestate = Gamestate.getInstance();
+                                  let distanceX = e.changedTouches[0].screenX - touchStartX;
+                                  let distanceY = e.changedTouches[0].screenY - touchStartY;
+                                  if (Math.abs(distanceX) > Math.abs(distanceY))
+                                  {
+                                    if (distanceX >= minSwipeX) {
+                                      gamestate.movePlayer("r");
+                                    }
+                                    else if (distanceX <= minSwipeX * -1) {
+                                      gamestate.movePlayer("l");
+                                    }
+                                  } else {
+                                    if (distanceY >= minSwipeY) {
+                                      gamestate.movePlayer("d");
+                                    }
+                                    else if (distanceY <= minSwipeY * -1) {
+                                      gamestate.movePlayer("u");
+                                    }
+                                  }
+                                }
+
+                                // Keyboard input
+                                function onKeyDown(key) {
+                                  let gamestate = Gamestate.getInstance();
+                                  switch(key.keyCode) {
+                                    case 87: // up
+                                      gamestate.movePlayer("u");
+                                      break;
+                                    case 83: // down
+                                      gamestate.movePlayer("d");
+                                      break;
+                                    case 65: // left
+                                      gamestate.movePlayer("l");
+                                      break;
+                                    case 68: // right
+                                      gamestate.movePlayer("r");
+                                      break;
+                                    case 38: // up
+                                      gamestate.movePlayer("u");
+                                      break;
+                                    case 40: // down
+                                      gamestate.movePlayer("d");
+                                      break;
+                                    case 37: // left
+                                      gamestate.movePlayer("l");
+                                      break;
+                                    case 39: // right
+                                      gamestate.movePlayer("r");
+                                      break;
+                                    case 82: // r
+                                      resetAll();
+                                      break;
+                                  }
+                                }
+
+
+                                /********************
+
+                                Let's play!
+
+                                ********************/
+                                app = new PIXI.Application({ width: appWidth, height: appHeight });
+                                app.stage.sortableChildren = true
+                                document.getElementById("game").appendChild(app.view);
+
+                                async function loadAssets() {
+                                  await PIXI.Assets.loadBundle("environment");
+                                  await PIXI.Assets.loadBundle(`spritesheets`);
+                                }
+
+                                loadAssets().then(() => {
+                                  let gamestate = Gamestate.getInstance();
+
+                                  // register interaction callbacks
+                                  let touchStartX = 0
+                                  let touchStartY = 0
+                                  document.addEventListener('touchstart', onTouchStart);
+                                  document.addEventListener('touchend', onTouchEnd);
+                                  document.addEventListener("keydown", onKeyDown, false);
+
+                                  // begin play!
+                                  gamestate.playSFX("bgm", {volume: .5});
+                                  gamestate.beginFadein();
+                                });
+
+                              </script>
+                          <h2>[W/A/S/D] or [Up/Left/Down/Right] to move</h2>
+                          <br>
+                          <h3>In a hurry? Content not loading?</h3>
+                          <h4><a href="../academic">Research</a> | <a href="creations">Creations</a> | <a href="puzzle">???</a></h4>
+                          <br>
+                          <h4>Interested in seeing how this page works?<br>Full implementation available in the source code!</h4>
+                      </div>
+                  </div>
+
+          </div>
+
+      <!-- Scripts -->
+          <script src="assets/js/jquery.min.js"></script>
+          <script src="assets/js/browser.min.js"></script>
+          <script src="assets/js/breakpoints.min.js"></script>
+          <script src="assets/js/util.js"></script>
+          <script src="assets/js/main.js"></script>
+
+  </body>
+</html>
