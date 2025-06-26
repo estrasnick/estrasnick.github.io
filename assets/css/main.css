@@ -162,6 +162,11 @@ input, select, textarea {
 		font-style: italic;
 	}
 
+	.callout-text {
+		font-weight: 700;
+		color: #086666;
+	}
+
 	p {
 		margin: 0 0 2em 0;
 	}
@@ -400,6 +405,16 @@ input, select, textarea {
 			margin: 2.5em 0 0 2.5em;
 		}
 
+		.tiles article.triptych {
+			-moz-transition: -moz-transform 0.5s ease, opacity 0.5s ease;
+			-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+			-ms-transition: -ms-transform 0.5s ease, opacity 0.5s ease;
+			transition: transform 0.5s ease, opacity 0.5s ease;
+			position: relative;
+			width: calc(33% - 2.5em);
+			margin: 2.5em 0 0 2.5em;
+		}
+
 			.tiles article > .image {
 				-moz-transition: -moz-transform 0.5s ease;
 				-webkit-transition: -webkit-transform 0.5s ease;
@@ -436,7 +451,7 @@ input, select, textarea {
 					width: 100%;
 					height: 100%;
 					z-index: 1;
-					opacity: 0.8;
+					opacity: 0.7;
 				}
 
 			.tiles article > a {
@@ -574,6 +589,11 @@ input, select, textarea {
 					margin: 1.25em 0 0 1.25em;
 				}
 
+				.tiles article.triptych {
+					width: calc(33% - 1.25em);
+					margin: 1.25em 0 0 1.25em;
+				}
+
 		}
 
 		@media screen and (max-width: 980px) {
@@ -587,6 +607,11 @@ input, select, textarea {
 					margin: 2.5em 0 0 2.5em;
 				}
 
+				.tiles article.triptych {
+					width: calc(33% - 2.5em);
+					margin: 2.5em 0 0 2.5em;
+				}
+
 		}
 
 		@media screen and (max-width: 736px) {
@@ -597,6 +622,11 @@ input, select, textarea {
 
 				.tiles article {
 					width: calc(50% - 1.25em);
+					margin: 1.25em 0 0 1.25em;
+				}
+
+				.tiles article.triptych {
+					width: calc(33% - 1.25em);
 					margin: 1.25em 0 0 1.25em;
 				}
 
@@ -616,6 +646,11 @@ input, select, textarea {
 			}
 
 				.tiles article {
+					width: 100%;
+					margin: 1.25em 0 0 0;
+				}
+
+				.tiles article.triptych {
 					width: 100%;
 					margin: 1.25em 0 0 0;
 				}
@@ -656,6 +691,46 @@ input, select, textarea {
 		max-width: 128px;
 		border-radius: 50%;
 	}
+
+
+/* About */
+
+	#about {
+		width: 80%;
+		height: 100%;
+		margin: auto;
+	}
+
+	#about-text {
+		display: block;
+		width: 100%;
+	}
+
+	#about-image-container {
+		display: none;
+	}
+
+	@media screen and (min-width: 736px) {
+		#about-text {
+			display: inline-block;
+			width: 55%;
+		}
+
+		#about-image-container {
+			display: inline-block;
+			width: 30%;
+			height: 100%;
+			vertical-align: top;
+			margin: 0 2.5em 0 2.5em;
+		}
+
+		#about-image {
+			width: 100%;
+			vertical-align: middle;
+		}
+	}
+
+
 
 /* Wrapper */
 
