@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <!--
-	Attribution: CSS adapted from this wonderful template:
-	Phantom by HTML5 UP
+	CSS adapted from these wonderful templates:
+	- Phantom
+	- Story
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
@@ -14,64 +15,254 @@
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
-		<!-- Wrapper -->
-			<div id="wrapper">
 
-				<!-- Main -->
-					<div id="main">
-						<div class="inner">
-							<header>
-								<img id="headshot" src="images/me_s.jpg" alt="Photo of Evan" />
-								<h1>Hi, Evan here. Thanks for stopping by.</h1>
-							</header>
-							<section class="tiles">
-								<article class="style1 triptych">
-									<span class="image">
-										<video preload="auto" autoplay loop muted>
-											<source src="images/hytale_q.webm" type="video/webm"/>
-										</video>
-									</span>
-									<a href="about">
-										<h2>About</h2>
-										<div class="content">
-											<p>My story and career.</p>
-										</div>
-									</a>
-								</article>
-								<article class="style2 triptych">
-									<span class="image">
-										<video preload="auto" autoplay loop muted>
-											<source src="images/SST_Preview_cropped.webm" type="video/webm"/>
-										</video>
-									</span>
-									<a href="personal">
-										<h2>Games and Creations</h2>
-										<div class="content">
-											<p>Projects, games, creations, and explorations.</p>
-										</div>
-									</a>
-								</article>
-								<article class="style3 triptych">
-									<span class="image">
-										<video preload="auto" autoplay loop muted>
-											<source src="images/edge_display_game.webm" type="video/webm"/>
-										</video>
-									</span>
-									<a href="academic">
-										<h2>Research</h2>
-										<div class="content">
-											<p>Academic works.</p>
-										</div>
-									</a>
-								</article>
-							</section>
+			<div id="wrapper" class="divided">
+
+					<section class="banner style3 color6 orient-left content-align-left image-position-center onload-image-fade-in onload-content-fade-right">
+						<div class="content">
+							<h1>Hi, Evan here.</h1>
+							<p class="major">Designer. Engineer. Scientist. Creator.</p>
+							<p>Below is a sampling of some of my personal creations.</p>
+							<p>If you're looking for my academic works (HCI Research), click <a href="academic">here</a>.<br>Or, click the joystick to navigate this page in a more whimsical way: <a href="personal">🕹️</a></p>
+							<ul class="actions">
+								<li><a href="#portfolio" class="button big smooth-scroll-middle">Portfolio</a></li>
+								<li><a href="#aboutme" class="button big smooth-scroll-middle">About Me</a></li>
+								<li><a href="#contact" class="button big smooth-scroll-middle">Get In Touch</a></li>
+							</ul>
 						</div>
-					</div>
+						<div class="image">
+							<img id="headshot" src="images/me.jpg" alt="Photo of Evan" />
+						</div>
+					</section>
+
+					<section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in" id="portfolio">
+						<div class="content">
+							<h2>Featured Project: Side Scroller UE5 Plugin</h2>
+							<p class="project-tags">UE5, Designer Tooling, C++/Scripting</p>
+							<p>The Side Scroller Template is a free, widely-downloaded starter kit to develop 2.5D side-scrolling games in UE5, with full support for network replication, drag-and-drop camera control, and more.</p>
+							<p>I published this tookit from systems written for my own 2.5D title, after noticing a lack of high-quality samples available to Unreal developers. Most existing tools suffered from low extensibility, poor designer interfaces, or a lack of support for network replication.</p>
+							<p>The aim of this toolkit was to demonstrate performant patterns that make it easy for designers to prototype levels, configure movement, and experiment with new features. All systems are built in C++ and extended to designer-friendly blueprint interfaces, with multiplayer support right out of the box. </p>
+							<ul class="actions">
+								<li><a href="https://youtu.be/2JGzEQOaNS8" class="button">Highlight Video</a></li>
+								<li><a href="https://www.fab.com/listings/0c64fe7e-ac14-49a6-b507-39b133cdb25f" class="button">Marketplace Link</a></li>
+							</ul>
+						</div>
+						<div class="image">
+							<video preload="auto" autoplay loop muted>
+								<source src="images/SST_Preview_cropped.webm" type="video/webm"/>
+							</video>
+						</div>
+					</section>
+
+					<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in">
+						<div class="content">
+							<h2>Featured Asset Work: Niliko</h2>
+							<p class="project-tags">Blender, Modeling, Animation, Character Design</p>
+							<p>Niliko is a character from an in-development indie title with a focus on expressive, flow-state movement. Niliko's elder brother has long tended to the spiritual protection of their people, until his sudden disappearance. It is now young Niliko who must take up his brother's (far too large) sword and carry out this duty, while seeking answers of his own.</p>
+							<p>These assets were created in Blender fully from scratch, from concept design and modeling through texture mapping, rigging, and animation. The samples shown here demonstrate early explorations of weight and momentum to inform Niliko's combat design across two different forms: In his base form, Niliko's strikes are deliberate and strong, with super armor covering substantial wind-up motions. When empowered by his brother's spirit, his moveset facilities freeform combo articulation via additional hitstun, reduced recovery frames, and knockback adjustments. </p>
+							<!-- <ul class="actions stacked">
+							</ul> -->
+						</div>
+						<div class="image">
+							<video preload="auto" autoplay loop muted>
+								<source src="images/AttackSamples_cropped_q.webm" type="video/webm"/>
+							</video>
+						</div>
+					</section>
+
+					<section class="wrapper style1 align-center">
+						<div class="inner">
+							<h2>Additional Projects</h2>
+						</div>
+
+						<!-- Gallery -->
+							<div class="gallery style1 medium lightbox onscroll-fade-in">
+								<article>
+									<a href="https://portofmars.asu.edu/" class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/pom_q.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>Port of Mars</h3>
+										<p>A digital/tabletop game of social survival. Collaborate to endure life on Mars, while competing to advance your victory. <br>[contribution: technical design]</p>
+										<ul class="actions fixed">
+											<li><span class="button small">Details</span></li>
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a href="https://github.com/estrasnick/BarAssistant" class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/barassistant_gif_q_cropped.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>LED Bar Assistant</h3>
+										<p>WiFi-enabled LED matrix to generate mixological suggestions from your home bar.</p>
+										<ul class="actions fixed">
+											<li><span class="button small">Details</span></li>
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/holodisplay_q.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>Holographic Avatar Display</h3>
+										<p>Holographic display that renders animated avatars for characters you choose in various games. Supports fetching character selection via game API as well as via OCR. Documentation coming soon!</p>
+										<ul class="actions fixed">
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a href="https://www.microsoft.com/en-us/research/publication/haptic-links-bimanual-haptics-for-virtual-reality-using-variable-stiffness-actuation-2/" class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/hapticlinks_q.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>Haptic Links</h3>
+										<p>Modular VR controller attachments unlocking haptic forces between the hands for games and experiences.</p>
+										<ul class="actions fixed">
+											<li><span class="button small">Details</span></li>
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a href="https://youtu.be/lCnh_pKSSwA/" class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="../../images/edge_display_game.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>shiftIO</h3>
+										<p>Dynamic physical buttons for mobile devices. <br>Summon custom physical control layouts for games and applications.</p>
+										<ul class="actions fixed">
+											<li><span class="button small">Details</span></li>
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a href="academic/otherprojects/harmoneyes.html" class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/harmoneyes_q.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>HarmonEyes</h3>
+										<p>A 3D soundscape explored by hand and ear.</p>
+										<ul class="actions fixed">
+											<li><span class="button small">Details</span></li>
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/lights_q.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>Raspberry Pi LED Lighting</h3>
+										<p>Synchronized LED lighting controlled via microcontroller over OSC. Driven by MIDI instruments, depth cameras, or any other application.</p>
+										<ul class="actions fixed">
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a class="image">
+										<img src="images/fightstick_q.png" alt="Hybrid Fightstick" />
+									</a>
+									<div class="caption">
+										<h3>Hybrid Fightstick</h3>
+										<p>An arcade controller with custom wiring to independently enable/disable both traditional stick and leverless input styles.</p>
+										<ul class="actions fixed">
+										</ul>
+									</div>
+								</article>
+								<article>
+									<a class="image">
+										<video preload="auto" autoplay loop muted>
+											<source src="images/pianolens_q.webm" type="video/webm"/>
+										</video>
+									</a>
+									<div class="caption">
+										<h3>Augmented Reality Musical Instruction</h3>
+										<p>An Augmented Reality piano game designed for Hololens.</p>
+										<ul class="actions fixed">
+										</ul>
+									</div>
+								</article>
+							</div>
+
+					</section>
+
+					<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in" id="aboutme">
+						<div class="content">
+							<h2>About Me</h2>
+							<p>My joy is to create new, magical experiences, and to empower others to do the same.<br>As careers go, that passion has taken me down interesting roads.</p>
+
+							<p>Most recently, as a Senior Technical Designer at <strong>Hypixel Studios</strong>, I pushed genre boundaries in an ambitious, expressive game where players can realize their own creative dreams. I designed and developed new ways for Creators to make worlds, NPCs, items, and more. I then put those same tools to use in designing grand adventures, fierce foes, and competitive minigames.</p>
+
+							<p>Prior to that, I was designing new VR/AR interactions at <strong>Reality Labs</strong>. With a focus on fluid, intuitive controls and rich feedback, I led research into novel ways to manipulate and experience the virtual. </p>
+
+							<p>As a designer, I draw from an equally eclectic academic background in <strong>Human-Computer Interaction</strong> — a field where we consider how novel applications of the digital can enrich the human experience. My PhD work aimed to give Creators better ways to understand and manipulate their creations. At the same time, I explored new forms of haptics, tangible/shape-changing interfaces, and mixed reality, to create immersive and dynamic experiences.</p>
+						</div>
+						<div class="image">
+							<img src="images/aboutme_q.jpg" alt="" />
+						</div>
+					</section>
+
+					<section class="wrapper style1 align-center" id="contact">
+						<div class="inner medium">
+							<h2>Get in touch</h2>
+							<form method="post" action="https://api.web3forms.com/submit">
+								<input type="hidden" name="access_key" value="4b4f3c5b-94d6-48af-8257-6feee3589ca6">
+								<div class="fields">
+									<div class="field half">
+										<label for="name">Your name</label>
+										<input type="text" name="name" id="name" value="" required/>
+									</div>
+									<div class="field half">
+										<label for="email">Your email</label>
+										<input type="email" name="email" id="email" value="" required/>
+									</div>
+									<div class="field">
+										<label for="message">Message</label>
+										<textarea name="message" id="message" rows="6"required></textarea>
+									</div>
+								</div>
+								<ul class="actions special">
+									<li><input type="submit" name="submit" id="submit" value="Send Message" /></li>
+								</ul>
+							</form>
+
+						</div>
+					</section>
+
+				<!-- Footer -->
+					<!-- <footer class="wrapper style1 align-center">
+						<div class="inner">
+							<ul class="icons">
+								<li><a href="#" class="icon brands style2 fa-twitter"><span class="label">Twitter</span></a></li>
+								<li><a href="#" class="icon brands style2 fa-facebook-f"><span class="label">Facebook</span></a></li>
+								<li><a href="#" class="icon brands style2 fa-instagram"><span class="label">Instagram</span></a></li>
+								<li><a href="#" class="icon brands style2 fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+								<li><a href="#" class="icon style2 fa-envelope"><span class="label">Email</span></a></li>
+							</ul>
+						</div>
+					</footer> -->
 
 			</div>
 
 		<!-- Scripts -->
 			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
 			<script src="assets/js/browser.min.js"></script>
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
